@@ -1,0 +1,12 @@
+{% extends 'services/base.html' %}
+
+{% block content %}
+
+        <h1> Services List View Page </h1>
+        {% for object in object_list %}
+
+            <a href="{{ object.get_absolute_url }}"> {{ object }}</a>
+
+        {% endfor%}
+
+{% endblock %}

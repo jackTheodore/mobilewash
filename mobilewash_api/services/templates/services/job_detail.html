@@ -1,0 +1,19 @@
+{% extends 'services/base.html' %}
+
+{% block content %}
+
+        <h1>Job Detail View</h1>
+        {{object}}
+
+        {% if object is not None %}
+
+            {{ object.title }}
+            {{ object.description }}
+        
+        {% else %}
+
+            <h4>Upgrade your membership</h4>
+
+        {% endif %}
+        
+{% endblock %}

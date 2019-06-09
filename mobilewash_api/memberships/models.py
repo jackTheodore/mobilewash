@@ -6,7 +6,7 @@ stripe.api_key = settings.STRIPE_SECRET_KEY
 # Create your models here.
 MEMBERSHIP_CHOICES = (
     ('Enterprise', 'ent'),
-    ('Professional', 'pro'),
+    ('Individual', 'ind'),
     ('Free', 'free')
 )
 
