@@ -1,0 +1,14 @@
+{% extends 'services/base.html' %}
+
+{% block content %}
+
+<div class="container">
+    <div class="row">
+        <h1>Payment</h1>
+        <div class="col-sm-4 col-md=4">
+                <p>Selected membership: {{ selected_membership }} </p>
+                <p>Price: <strong>R {{ selected_membership.price }}</strong><small>/month</small> </p>
+        </div>
+    </div>
+</div>
+{% endblock content %}
