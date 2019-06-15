@@ -18,7 +18,7 @@ class Membership(models.Model):
         default='free'
         )
     price = models.IntegerField(default=15)
-    strip_plan_id = models.CharField(max_length=40)
+    stripe_plan_id = models.CharField(max_length=40)
 
     def __str__(self):
         return self.membership_type

@@ -1,12 +1,21 @@
 from django.conf import settings
 from django.contrib import messages
 from django.http import HttpResponseRedirect
-from django.shortcuts import render
+from django.shortcuts import render,redirect
 from django.views.generic import ListView 
 from .models import Membership, UserMembership, Subscription
 from django.urls import reverse
 
 import stripe
+
+def profile_view(request):
+    user_membership = get_user_membership(request)
+    user_subscription  = get_user_subscription(request)
+    context = {
+        'user_membership' : user_membership,
+        'user_subscription' : user_subscription
+    }
+    return render(request,"memberships/profile.html",context)
 
 
 def get_user_membership(request):
@@ -80,6 +89,26 @@ def PaymentView(request):
 
     publishKey = settings.STRIPE_PUBLISHABLE_KEY
 
+    if request.method == "POST":
+        try:
+            token = request.POST['stripeToken']
+            subscription = stripe.Subscription.create(
+                customer=user_membership.stripe_customer_id,
+                items=[
+                    {
+                    "plan": selected_membership.stripe_plan_id,
+                    },
+                ],
+                source=token
+                )
+            return redirect(reverse('memberships:update-transactions',
+                kwargs={
+                    'subscription_id': subscription.id  
+                }))
+        except stripe.error.CardError:
+            messages.info(request, "Your card has been declined")
+            
+
     context = {
         'publishKey': publishKey,
         'selected_membership': selected_membership
@@ -88,7 +117,25 @@ def PaymentView(request):
     return render(request, "memberships/membership_payment.html", context)
 
 
+def updateTransactionRecords(redirect,subscription_id):
+    user_membership = get_user_membership(request)
+    selected_membership = get_selected_membership(request)
 
+    user_membership.membership = selected_membership
+    user_membership.save()
+
+    sub, created = Subscription.objects.get_or_create(user_membership=user_membership)
+    sub.stripe_subscription_id = subscription_id
+    sub.active = True
+    sub.save()
+
+    try: 
+        del request.session['selected_membership_type']
+    except:
+        pass
+
+    messages.info(request, "Successfully created {} membership".format(selected_membership))
+    return redirect('/services')
 
 
      
