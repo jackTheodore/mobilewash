@@ -1,6 +1,7 @@
 from django.shortcuts import render
 from django.views.generic import ListView, DetailView, View
-
+from django.contrib.auth.mixins import LoginRequiredMixin
+from django.shortcuts import render, get_object_or_404
 from memberships.models import UserMembership
 from .models import Service
 
@@ -12,30 +13,15 @@ class ServiceDetailView(DetailView):
     model = Service
 
 
-class JobDetailView(View):
+class JobDetailView(LoginRequiredMixin,View):
     
     def get(self, request, service_slug, job_slug, *args, **kwargs):
-      
-        service_qs = Service.objects.filter(slug=service_slug)
-        if service_qs.exists():
-            service = service_qs.first()
-
-        job_qs = service.jobs.filter(slug=job_slug)
-        if job_qs.exists():
-            job = job_qs.first()
-
-        user_membership = UserMembership.objects.filter(user=request.user).first()
-        user_membership_type = user_membership.membership.membership_type 
-
-        service_allowed_mem_type = service.allowed_memberships.all()  
-
-        context = {
-            'object': None
-        }
-
-        if service_allowed_mem_type.filter(membership_type=user_membership_type).exists():
-            context = {
-                'object': job
-            }
-
-        return render(request, "services/job_detail.html", context)
+            service = get_object_or_404(Service, slug=service_slug)
+            job = get_object_or_404(job, slug=job_slug)
+            user_membership = get_object_or_404(UserMembership, user=request.user)
+            user_membership_type = user_membership.membership.membership_type
+            service_allowed_mem_types = service.allowed_memberships.all()
+            context = { 'object': None }
+            if service_allowed_mem_types.filter(membership_type=user_membership_type).exists():
+                context = {'object': job}
+            return render(request, "services/job_detail.html", context)
